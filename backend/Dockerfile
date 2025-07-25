@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm cache clean --force && npm install --force
 
 # Copy the rest of the backend code
 COPY . .
@@ -17,5 +17,4 @@ COPY . .
 EXPOSE 8080
 
 # Command to start the backend
-CMD ["node", "server.js"]
-
+CMD ["node", "src/server.js"]

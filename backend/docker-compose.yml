@@ -1,39 +1,30 @@
 version: '3.8'
 
 services:
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: visitor-backend
-    ports:
-      - "8080:8080"
-    environment:
-      - JWT_SECRET=${JWT_SECRET}
-      - PORT=8080
-    depends_on:
-      - mongodb
-    networks:
-      - visitor-network
-
-  
-  mongodb:
+  mongo:
     image: mongo:6.0
+    container_name: mongo
     ports:
       - "27017:27017"
     volumes:
-      - mongodb-data:/data/db
-    healthcheck:
-      test: ["CMD", "mongod", "--eval", "db.runCommand('ping').ok", "--quiet"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - visitor-network
+      - mongo-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=residentdb
 
-networks:
-  visitor-network:
-    driver: bridge
+  app:
+    build:
+      context: .
+    container_name: visitor-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/residentdb
+      - JWT_SECRET=${JWT_SECRET}
+      - PORT=8080
+    env_file:
+      - .env
 
 volumes:
-  mongodb-data:
+  mongo-data:

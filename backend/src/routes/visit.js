@@ -4,6 +4,7 @@ const auth = require('../middleware/auth');
 const Visit = require('../models/visit');
 const Resident = require('../models/resident');
 const { v4: uuidv4 } = require('uuid');
+const { CLIENT_BASE_URL } = require('../constants');
 
 // Create a visit (resident only)
 router.post('/', auth, async (req, res) => {
@@ -26,7 +27,7 @@ router.post('/', auth, async (req, res) => {
     });
 
     await visit.save();
-    res.json({ visitId: visit.visitId, url: `http://localhost:3000/visit/${visit.visitId}` });
+    res.json({ visitId: visit.visitId, url: `${CLIENT_BASE_URL}/visit/${visit.visitId}` });
   } catch (err) {
     res.status(500).json({ msg: 'Server error' });
   }

@@ -1,6 +1,7 @@
 const express = require('express');
 const connectDB = require('./config/db');
 const cors = require('cors');
+const CLIENT_BASE_URL = require('./constants');
 require('dotenv').config();
 
 const app = express();
@@ -10,7 +11,7 @@ connectDB();
 
 // Middleware
 app.use(cors({ 
-    origin: 'http://localhost:3000',
+    origin: CLIENT_BASE_URL || 'http://localhost:3000',
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'x-auth-token']
 }));

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { QRCodeCanvas } from 'qrcode.react';
+import { BASE_URL } from "../constants";
 
 function CreateVisit() {
   const [visitorName, setVisitorName] = useState('');
@@ -16,16 +17,19 @@ function CreateVisit() {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
+        console.log('~~~ not token ~~')
         setError('No authentication token found. Please log in.');
         return;
       }
       const res = await axios.post(
-        'http://192.168.1.188:8080/api/visit',
+        `${BASE_URL}/api/visit`,
         { visitorName, visitTime, visitDuration, carDetails },
         { headers: { 'x-auth-token': token } }
       );
+      console.log('~~~ res ==> ', res.data)
       setQrUrl(res.data.url);
     } catch (err) {
+      console.log('error from server ==> ', err);
       alert('Error creating visit');
     }
   };
@@ -39,6 +43,22 @@ function CreateVisit() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '400px', margin: '0 auto' }}>
       <h2>Create Visit</h2>
+      {error && (
+        <div
+          style={{
+            color: '#d32f2f',
+            backgroundColor: '#ffebee',
+            padding: '10px',
+            border: '1px solid #d32f2f',
+            borderRadius: '4px',
+            margin: '10px auto',
+            maxWidth: '400px',
+            textAlign: 'center',
+          }}
+        >
+          {error}
+        </div>
+      )}
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <input
           type="text"

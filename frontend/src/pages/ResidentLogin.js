@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { BASE_URL } from "../constants";
 
 function ResidentLogin() {
   const [username, setUsername] = useState('');
@@ -10,7 +11,7 @@ function ResidentLogin() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://192.168.1.188:8080/api/auth/resident/login', { username, password });
+      const res = await axios.post(`${BASE_URL}/api/auth/resident/login`, { username, password });
       localStorage.setItem('token', res.data.token);
       navigate('/resident/create-visit');
     } catch (err) {

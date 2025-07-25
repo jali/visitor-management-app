@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
+import { BASE_URL } from '../constants';
 
 function VisitDetails() {
   const { visitId } = useParams();
@@ -22,7 +23,7 @@ function VisitDetails() {
       setIsLoading(true);
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get(`http://192.168.1.188:8080/api/visit/${visitId}`, {
+        const res = await axios.get(`${BASE_URL}/api/visit/${visitId}`, {
           headers: { 'x-auth-token': token },
         });
         setVisit(res.data);
@@ -104,6 +105,19 @@ function VisitDetails() {
       }}>
         Visit Details
       </h2>
+      {isLoading && (
+        <div
+          style={{
+            width: '24px',
+            height: '24px',
+            border: '4px solid #f3f3f3',
+            borderTop: '4px solid #3498db',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '10px auto',
+          }}
+        />
+      )}
       <div style={{
         display: 'grid',
         gridTemplateColumns: '1fr 2fr',

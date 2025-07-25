@@ -22,7 +22,7 @@ function VisitDetails() {
       setIsLoading(true);
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get(`http://localhost:8080/api/visit/${visitId}`, {
+        const res = await axios.get(`http://192.168.1.188:8080/api/visit/${visitId}`, {
           headers: { 'x-auth-token': token },
         });
         setVisit(res.data);

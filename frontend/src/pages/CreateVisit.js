@@ -20,7 +20,7 @@ function CreateVisit() {
         return;
       }
       const res = await axios.post(
-        'http://localhost:8080/api/visit',
+        'http://192.168.1.188:8080/api/visit',
         { visitorName, visitTime, visitDuration, carDetails },
         { headers: { 'x-auth-token': token } }
       );

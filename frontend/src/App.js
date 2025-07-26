@@ -1,67 +1,54 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
-import Layout from './components/Layout';
-import LandingPage from './pages/LandingPage';
-import ResidentLogin from './pages/ResidentLogin';
-import AdminLogin from './pages/AdminLogin';
-import CreateVisit from './pages/CreateVisit';
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import Login from './components/Login';
+import AdminDashboard from './components/AdminDashboard';
+import SecurityDashboard from './components/SecurityDashboard';
+import ResidentDashboard from './components/ResidentDashboard';
 import VisitDetails from './pages/VisitDetails';
-
-function ProtectedRoutes() {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        const currentTime = Date.now() / 1000; // Current time in seconds
-        if (decoded.exp < currentTime) {
-          localStorage.removeItem('token'); // Remove expired token
-          return;
-        }
-
-        // Redirect authenticated users away from login pages
-        const isLoginPage = location.pathname === '/resident/login' || location.pathname === '/admin/login';
-        if (isLoginPage) {
-          if (decoded.user.role === 'admin') {
-            navigate('/visit/scan', { replace: true });
-          } else if (decoded.user.role === 'resident') {
-            console.log('navigate to resident')
-            navigate('/resident/create-visit', { replace: true });
-          }
-        }
-      } catch (err) {
-        console.error('Invalid token:', err);
-        localStorage.removeItem('token');
-      }
-    }
-  }, [location.pathname, navigate]);
-
-  return (
-    <Routes>
-      <Route element={<Layout />}>
-        <Route index path="/" element={<LandingPage />} />
-        <Route path="/resident/login" element={<ResidentLogin />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/resident/create-visit" element={<CreateVisit />} />
-        <Route path="/visit/:visitId" element={<VisitDetails />} />
-        <Route path="/visit/scan" element={<div>Admin Scan Page (TBD)</div>} />
-      </Route>
-      <Route path="*" element={<div>404: Page Not Found</div>} />
-    </Routes>
-  );
-}
+import CreateVisit from './pages/CreateVisit';
+import { decodedTokenData } from './services/auth'; // Import the function
 
 function App() {
+  const token = localStorage.getItem('token');
+  const decoded = token ? decodedTokenData(token) : null;
+  const role = decoded ? decoded.role : null;
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    window.location.href = '/login';
+  };
+
   return (
     <Router>
-      <ProtectedRoutes />
+      <Routes>
+        <Route
+          path="/login"
+          element={token && role ? <Navigate to={role === 'resident' ? (Math.random() < 0.5 ? '/resident-dashboard' : '/create-visit') : `/${role}-dashboard`} /> : <Login />}
+        />
+        <Route
+          path="/admin-dashboard"
+          element={token && role === 'admin' ? <AdminDashboard onLogout={handleLogout} /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/security-dashboard"
+          element={token && role === 'security' ? <SecurityDashboard onLogout={handleLogout} /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/resident-dashboard"
+          element={token && role === 'resident' ? <ResidentDashboard onLogout={handleLogout} /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/visits/:id"
+          element={token ? <VisitDetails onLogout={handleLogout} /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/create-visit"
+          element={token && role === 'resident' ? <CreateVisit onLogout={handleLogout} /> : <Navigate to="/login" />}
+        />
+        <Route path="/" element={<Navigate to="/login" />} />
+      </Routes>
     </Router>
   );
 }
 
 export default App;
-

@@ -1,48 +1,133 @@
-import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
-import { QRCodeCanvas } from 'qrcode.react';
-import { BASE_URL } from "../constants";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../constants';
+import { v4 as uuidv4 } from 'uuid';
+import { decodedTokenData } from '../services/auth';
 
-function CreateVisit() {
-  const [visitorName, setVisitorName] = useState('');
-  const [visitTime, setVisitTime] = useState('');
-  const [visitDuration, setVisitDuration] = useState('');
-  const [carDetails, setCarDetails] = useState('');
-  const [qrUrl, setQrUrl] = useState('');
-  const [error, setError] = useState('');
-  const qrRef = useRef(null);
+function CreateVisit({ onLogout }) {
+  const [formData, setFormData] = useState({
+    visitorName: '',
+    visitTime: '',
+    visitDuration: '',
+    flatNumber: '',
+    buildingNumber: '',
+    carDetails: '',
+    visitId: uuidv4(),
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const token = localStorage.getItem('token');
+  const decoded = token ? decodedTokenData(token) : null;
+  const userId = decoded ? decoded.id : null;
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError(null);
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.log('~~~ not token ~~')
-        setError('No authentication token found. Please log in.');
-        return;
+      const response = await fetch(`${API_BASE_URL}/visit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ ...formData, residentId: userId }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        navigate('/resident-dashboard');
+      } else {
+        setError(data.message || 'Failed to create visit');
       }
-      const res = await axios.post(
-        `${BASE_URL}/api/visit`,
-        { visitorName, visitTime, visitDuration, carDetails },
-        { headers: { 'x-auth-token': token } }
-      );
-      console.log('~~~ res ==> ', res.data)
-      setQrUrl(res.data.url);
     } catch (err) {
-      console.log('error from server ==> ', err);
-      alert('Error creating visit');
+      setError('Server error');
     }
+    setIsLoading(false);
   };
 
-  useEffect(() => {
-    if (qrUrl && qrRef.current) {
-      qrRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }, [qrUrl]);
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '400px', margin: '0 auto' }}>
-      <h2>Create Visit</h2>
+    <div className="container">
+      <div className="header">
+        <h1>Create New Visit</h1>
+        <button onClick={onLogout} className="button" style={{ backgroundColor: '#d32f2f', float: 'right' }}>
+          Logout
+        </button>
+      </div>
+      <form className="form" onSubmit={handleSubmit}>
+        <input
+          type="text"
+          name="visitorName"
+          value={formData.visitorName}
+          onChange={handleChange}
+          placeholder="Visitor Name"
+          required
+          style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+        />
+        <input
+          type="datetime-local"
+          name="visitTime"
+          value={formData.visitTime}
+          onChange={handleChange}
+          required
+          style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+        />
+        <input
+          type="number"
+          name="visitDuration"
+          value={formData.visitDuration}
+          onChange={handleChange}
+          placeholder="Duration (hours)"
+          required
+          style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+        />
+        <input
+          type="text"
+          name="flatNumber"
+          value={formData.flatNumber}
+          onChange={handleChange}
+          placeholder="Flat Number"
+          required
+          style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+        />
+        <input
+          type="text"
+          name="buildingNumber"
+          value={formData.buildingNumber}
+          onChange={handleChange}
+          placeholder="Building Number"
+          required
+          style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+        />
+        <input
+          type="text"
+          name="carDetails"
+          value={formData.carDetails}
+          onChange={handleChange}
+          placeholder="Car Details (optional)"
+          style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+        />
+        <button type="submit" disabled={isLoading} className="button">
+          Create Visit
+        </button>
+      </form>
+      {isLoading && (
+        <div
+          style={{
+            width: '24px',
+            height: '24px',
+            border: '4px solid #f3f3f3',
+            borderTop: '4px solid #3498db',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '10px auto',
+          }}
+        />
+      )}
       {error && (
         <div
           style={{
@@ -57,58 +142,6 @@ function CreateVisit() {
           }}
         >
           {error}
-        </div>
-      )}
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <input
-          type="text"
-          value={visitorName}
-          onChange={(e) => setVisitorName(e.target.value)}
-          placeholder="Visitor Name"
-          style={{ padding: '8px', fontSize: '16px' }}
-          required
-        />
-        <input
-          type="datetime-local"
-          value={visitTime}
-          onChange={(e) => setVisitTime(e.target.value)}
-          style={{ padding: '8px', fontSize: '16px' }}
-          required
-        />
-        <input
-          type="number"
-          value={visitDuration}
-          onChange={(e) => setVisitDuration(e.target.value)}
-          placeholder="Duration (hours)"
-          style={{ padding: '8px', fontSize: '16px' }}
-          required
-        />
-        <input
-          type="text"
-          value={carDetails}
-          onChange={(e) => setCarDetails(e.target.value)}
-          placeholder="Car Details (optional)"
-          style={{ padding: '8px', fontSize: '16px' }}
-        />
-        <button 
-            type="submit"
-            style={{ 
-                padding: '10px 20px',
-                fontSize: '16px',
-                backgroundColor: '#1976d2',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-            }}
-        >
-            Generate QR Code
-        </button>
-      </form>
-      {qrUrl && (
-        <div ref={qrRef}>
-          <h3>QR Code for Visitor</h3>
-          <QRCodeCanvas value={qrUrl}  style={{width: "100%", height: "100%"}}/>
         </div>
       )}
     </div>

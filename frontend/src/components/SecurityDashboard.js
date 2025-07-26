@@ -1,21 +1,19 @@
-// frontend/src/pages/VisitDetails.js
+// frontend/src/components/SecurityDashboard.js
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
 import { API_BASE_URL } from '../constants';
 
-function VisitDetails({ onLogout }) {
-  const [visit, setVisit] = useState(null);
+function SecurityDashboard({ onLogout }) {
+  const [visits, setVisits] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { id } = useParams();
 
   useEffect(() => {
-    const fetchVisit = async () => {
+    const fetchVisits = async () => {
       setIsLoading(true);
       setError(null);
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`${API_BASE_URL}/visits/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/visits/active`, { // Assume backend endpoint for active visits
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
@@ -23,39 +21,38 @@ function VisitDetails({ onLogout }) {
         });
         const data = await response.json();
         if (response.ok) {
-          setVisit(data);
+          setVisits(data);
         } else {
-          setError(data.message || 'Failed to fetch visit');
+          setError(data.message || 'Failed to fetch visits');
         }
       } catch (err) {
         setError('Server error');
       }
       setIsLoading(false);
     };
-    fetchVisit();
-  }, [id]);
+    fetchVisits();
+  }, []);
 
   return (
     <div className="container">
       <div className="header">
-        <h1>Visit Details</h1>
+        <h1>Security Dashboard</h1>
         <button onClick={onLogout} className="button" style={{ backgroundColor: '#d32f2f', float: 'right' }}>Logout</button>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '10px' }}>
+        {visits.map((visit) => (
+          <div key={visit._id} className="card">
+            <p>Visitor: {visit.visitorName}</p>
+            <p>Flat: {visit.flatNumber}</p>
+            <p>Building: {visit.buildingNumber}</p>
+            <p>Status: Active</p>
+          </div>
+        ))}
       </div>
       {isLoading && <div style={{ /* Inline spinner */ }} />}
       {error && <div style={{ /* Inline error div */ }}>{error}</div>}
-      {visit && (
-        <div className="card" style={{ maxWidth: '600px', margin: '0 auto' }}>
-          <p>Visitor: {visit.visitorName}</p>
-          <p>Time: {new Date(visit.visitTime).toLocaleString()}</p>
-          <p>Duration: {visit.visitDuration} hours</p>
-          <p>Flat: {visit.flatNumber}</p>
-          <p>Building: {visit.buildingNumber}</p>
-          <p>Car Details: {visit.carDetails || 'N/A'}</p>
-          <p>Visit ID: {visit.visitId}</p>
-        </div>
-      )}
     </div>
   );
 }
 
-export default VisitDetails;
+export default SecurityDashboard;

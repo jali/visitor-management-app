@@ -1,7 +1,8 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
-const Admin = require('./models/admin');
-const Resident = require('./models/resident');
+const User = require('./models/user');
+const Visit = require('./models/visit');
+const { v4: uuidv4 } = require('uuid');
 
 const seedData = async () => {
   try {
@@ -9,33 +10,45 @@ const seedData = async () => {
     console.log('MongoDB connected for seeding');
 
     // Clear existing data
-    await Admin.deleteMany({});
-    await Resident.deleteMany({});
+    await User.deleteMany({});
+    await Visit.deleteMany({});
 
-    // Map collection names to Mongoose models
-    const collectionMap = {
-      admins: Admin,
-      residents: Resident,
-    };
+    // Seed users
+    await User.create({
+      username: 'admin1',
+      password: 'admin123',
+      role: 'admin',
+    });
+    console.log('Inserted admin user: admin1');
 
-    // Seed admins and residents
-    const users = [
-      { username: 'admin1', password: 'admin123', role: 'admin', collection: 'admins' },
-      { username: 'resident1', password: 'resident123', flatNumber: '101', buildingNumber: 'A', role: 'resident', collection: 'residents' },
-    ];
+    await User.create({
+      username: 'security1',
+      password: 'security123',
+      role: 'security',
+    });
+    console.log('Inserted security user: security1');
 
-    for (const user of users) {
-      const userDoc = {
-        username: user.username,
-        password: user.password,
-      };
-      if (user.role === 'resident') {
-        userDoc.flatNumber = user.flatNumber;
-        userDoc.buildingNumber = user.buildingNumber;
-      }
-      await collectionMap[user.collection].create(userDoc);
-      console.log(`Inserted ${user.role} user: ${user.username}`);
-    }
+    const resident = await User.create({
+      username: 'resident1',
+      password: 'resident123',
+      role: 'resident',
+      flatNumber: '101',
+      buildingNumber: 'A',
+    });
+    console.log('Inserted resident user: resident1');
+
+    // Seed a visit for resident
+    await Visit.create({
+      residentId: resident._id,
+      visitorName: 'John Doe',
+      visitTime: new Date(),
+      visitDuration: 2,
+      flatNumber: '101',
+      buildingNumber: 'A',
+      carDetails: 'Blue Sedan, XYZ-1234',
+      visitId: uuidv4(),
+    });
+    console.log('Inserted test visit');
 
     console.log('Test data seeded');
     process.exit(0);

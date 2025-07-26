@@ -1,20 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/auth');
+const { protect, authorize } = require('../middleware/auth');
 const Visit = require('../models/visit');
-const Resident = require('../models/resident');
+const User = require('../models/user');
 const { v4: uuidv4 } = require('uuid');
 const { CLIENT_BASE_URL } = require('../constants');
 
 // Create a visit (resident only)
-router.post('/', auth, async (req, res) => {
+router.post('/', protect, authorize(['resident']), async (req, res) => {
   if (req.user.user.role !== 'resident') {
     return res.status(403).json({ msg: 'Access denied' });
   }
 
   const { visitorName, visitTime, visitDuration, carDetails } = req.body;
   try {
-    const resident = await Resident.findById(req.user.user.id);
+    const resident = await User.findById(req.user.user.id);
     const visit = new Visit({
       residentId: req.user.user.id,
       visitorName,
@@ -34,8 +34,8 @@ router.post('/', auth, async (req, res) => {
 });
 
 // Get visit details (admin only)
-router.get('/:visitId', auth, async (req, res) => {
-  if (req.user.user.role !== 'admin') {
+router.get('/:visitId', protect, authorize(['admin', 'security']), async (req, res) => {
+  if (req.user.user.role !== 'admin' || req.user.user.role !== 'security') {
     return res.status(403).json({ msg: 'Access denied' });
   }
 
@@ -45,6 +45,19 @@ router.get('/:visitId', auth, async (req, res) => {
     res.json(visit);
   } catch (err) {
     res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+// Get almyl visits for a resident
+router.get('/my-visits', protect, authorize(['resident']), async (req, res) => {
+  if (req.user.user.role !== 'resident') {
+    return res.status(403).json({ msg: 'Access denied' });
+  }
+  try {
+    const visits = await Visit.find({ residentId: req.user.id });
+    res.json(visits);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
 

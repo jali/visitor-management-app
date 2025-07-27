@@ -1,24 +1,35 @@
-const jwt = require('jsonwebtoken');
+const jsonwebtoken = require('jsonwebtoken');
 
-const protect = (req, res, next) => {
-  let token = req.headers['x-auth-token'] || req.headers.authorization?.split(' ')[1];
-  if (!token) {
-    return res.status(401).json({ message: 'No token provided' });
-  }
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // Sets req.user with { id, role }
-    next();
-  } catch (err) {
-    res.status(401).json({ message: 'Invalid token' });
-  }
+module.exports = {
+    generateToken: (data, seconds=3600) => {
+        const encode = {
+            exp: Math.floor(Date.now() / 1000) + seconds,
+            ...data
+        };
+        const token = jsonwebtoken.sign(encode, process.env.TOKEN_SECRET, { algorithm: 'HS256' });
+        return token;
+    },
+    verifyToken: (req, res, next) => {
+        try {
+            const token = req.header('security_token');
+            const verified = jsonwebtoken.verify(token, process.env.TOKEN_SECRET);
+            req.user = verified;
+            next();
+        } catch (error) {
+            return res.status(401).send({ info: 'invalid token' });
+        }
+    },
+    checkRole: (roles) => {
+        if (typeof roles === 'string') {
+            roles = [roles];
+        }
+        return (req, res, next) => {
+            // Assumes this middleware is used after verifyToken, so req.user is set
+            if (req.user && roles.includes(req.user.role)) {
+                next();
+            } else {
+                return res.status(403).send({ info: 'access denied' });
+            }
+        };
+    }
 };
-
-const authorize = (roles) => (req, res, next) => {
-  if (!roles.includes(req.user.role)) {
-    return res.status(403).json({ message: 'Access denied' });
-  }
-  next();
-};
-
-module.exports = { protect, authorize };

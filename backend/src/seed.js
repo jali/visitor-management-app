@@ -15,21 +15,24 @@ const seedData = async () => {
 
     // Seed users
     await User.create({
-      username: 'admin1',
+      email: 'admin1@local',
+      name: 'admin1',
       password: 'admin123',
       role: 'admin',
     });
     console.log('Inserted admin user: admin1');
 
     await User.create({
-      username: 'security1',
+      email: 'security1@local',
+      name: 'security1',
       password: 'security123',
       role: 'security',
     });
     console.log('Inserted security user: security1');
 
     const resident = await User.create({
-      username: 'resident1',
+      email: 'resident1@local',
+      name: 'resident1',
       password: 'resident123',
       role: 'resident',
       flatNumber: '101',
@@ -40,12 +43,12 @@ const seedData = async () => {
     // Seed a visit for resident
     await Visit.create({
       residentId: resident._id,
-      visitorName: 'John Doe',
+      visitorName: 'Jalal Mahmood',
       visitTime: new Date(),
       visitDuration: 2,
       flatNumber: '101',
       buildingNumber: 'A',
-      carDetails: 'Blue Sedan, XYZ-1234',
+      carDetails: 'Toyota Corolla, 11 J 11',
       visitId: uuidv4(),
     });
     console.log('Inserted test visit');

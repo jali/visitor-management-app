@@ -11,7 +11,7 @@ module.exports = {
     },
     verifyToken: (req, res, next) => {
         try {
-            const token = req.header('security_token');
+            const token = req.header('x-auth-token');
             const verified = jsonwebtoken.verify(token, process.env.JWT_SECRET);
             req.user = verified;
             next();

@@ -15,7 +15,7 @@ const seedData = async () => {
 
     // Seed users
     await User.create({
-      email: 'admin1@local',
+      email: 'admin1@jal.al',
       name: 'admin1',
       password: 'admin123',
       role: 'admin',
@@ -23,7 +23,7 @@ const seedData = async () => {
     console.log('Inserted admin user: admin1');
 
     await User.create({
-      email: 'security1@local',
+      email: 'security1@jal.al',
       name: 'security1',
       password: 'security123',
       role: 'security',
@@ -31,7 +31,7 @@ const seedData = async () => {
     console.log('Inserted security user: security1');
 
     const resident = await User.create({
-      email: 'resident1@local',
+      email: 'resident1@jal.al',
       name: 'resident1',
       password: 'resident123',
       role: 'resident',

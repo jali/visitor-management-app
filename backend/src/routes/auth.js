@@ -11,29 +11,31 @@ router.post('/login', async (req, res) => {
   if (error) {
       return res.status(400).send({info: error['details'][0]['message']})
   }
-  const email = req.body.email
-  const password = req.body.password
-  User.findOne({email}, function (err, user){
-      if (err || !user) {
-          res.status(401).send({info: 'bad credentials, please try again'})
-      } 
-      if (user) {
-          user.comparePassword(password, function(err, isMatch) {
-              if (err) throw err;
-              if (isMatch){
-                  try {
-                      const data =  {_id: user.id, username: user.username, role:user.role}
-                      const token = auth.generateToken(data)
-                      res.header('x-auth-token',token).send({'security_token':token})
-                  } catch (error) {
-                      res.status(500).send({info: 'something went wrong'})
-                  }
-              } else {
-                  res.status(401).send({info: 'bad credentials, please try again'})
-              }
-          });
-      }
-  });
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).send({ info: 'bad credentials, please try again' });
+    }
+    const isMatch = await new Promise((resolve, reject) => {
+      user.comparePassword(password, (err, isMatch) => {
+        if (err) reject(err);
+        resolve(isMatch);
+      });
+    });
+    if (!isMatch) {
+      return res.status(401).send({ info: 'bad credentials, please try again' });
+    }
+    const data = { _id: user.id, name: user.name, role: user.role };
+    console.log('data:=======> ', data)
+    const token = auth.generateToken(data);
+
+    res.header('x-auth-token', token).send({ 'token': token });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ info: 'something went wrong' });
+  }
 });
 
 module.exports = router;

@@ -6,13 +6,13 @@ module.exports = {
             exp: Math.floor(Date.now() / 1000) + seconds,
             ...data
         };
-        const token = jsonwebtoken.sign(encode, process.env.TOKEN_SECRET, { algorithm: 'HS256' });
+        const token = jsonwebtoken.sign(encode, process.env.JWT_SECRET, { algorithm: 'HS256' });
         return token;
     },
     verifyToken: (req, res, next) => {
         try {
             const token = req.header('security_token');
-            const verified = jsonwebtoken.verify(token, process.env.TOKEN_SECRET);
+            const verified = jsonwebtoken.verify(token, process.env.JWT_SECRET);
             req.user = verified;
             next();
         } catch (error) {

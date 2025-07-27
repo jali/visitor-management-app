@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../constants';
 import { v4 as uuidv4 } from 'uuid';
@@ -17,7 +18,7 @@ function CreateVisit({ onLogout }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('security_token');
   const decoded = token ? decodedTokenData(token) : null;
   const userId = decoded ? decoded.id : null;
 
@@ -30,12 +31,8 @@ function CreateVisit({ onLogout }) {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/visit`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+      const response = await axios.post(`${API_BASE_URL}/visit`, {
+        headers: { 'x-auth-token': token },
         body: JSON.stringify({ ...formData, residentId: userId }),
       });
       const data = await response.json();

@@ -12,7 +12,7 @@ function AdminLogin() {
     e.preventDefault();
     try {
       const res = await axios.post(`${BASE_URL}/api/auth/admin/login`, { username, password });
-      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('security_token', res.data.token);
       navigate('/visit/scan');
     } catch (err) {
       alert('Login failed');

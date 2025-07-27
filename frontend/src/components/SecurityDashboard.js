@@ -1,5 +1,6 @@
 // frontend/src/components/SecurityDashboard.js
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { API_BASE_URL } from '../constants';
 
 function SecurityDashboard({ onLogout }) {
@@ -12,12 +13,9 @@ function SecurityDashboard({ onLogout }) {
       setIsLoading(true);
       setError(null);
       try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_BASE_URL}/visits/active`, { // Assume backend endpoint for active visits
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
+        const token = localStorage.getItem('security_token');
+        const response = await axios.get(`${API_BASE_URL}/visits/active`, { // Assume backend endpoint for active visits
+          headers: { 'x-auth-token': token },
         });
         const data = await response.json();
         if (response.ok) {

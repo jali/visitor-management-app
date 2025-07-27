@@ -3,10 +3,10 @@ import { Outlet, Link, useNavigate } from 'react-router-dom';
 
 function Layout() {
   const navigate = useNavigate();
-  const isLoggedIn = !!localStorage.getItem('token');
+  const isLoggedIn = !!localStorage.getItem('security_token');
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem('security_token');
     navigate('/', { replace: true });
   };
 
@@ -44,7 +44,7 @@ function Layout() {
           Home
         </Link>
         <Link
-          to="/resident/login"
+          to="/login"
           style={{
             color: '#fff',
             textDecoration: 'none',
@@ -57,24 +57,9 @@ function Layout() {
           onMouseOver={(e) => (e.target.style.backgroundColor = '#1565c0')}
           onMouseOut={(e) => (e.target.style.backgroundColor = 'transparent')}
         >
-          Resident Login
+          Login
         </Link>
-        <Link
-          to="/admin/login"
-          style={{
-            color: '#fff',
-            textDecoration: 'none',
-            fontSize: '1.1rem',
-            fontWeight: '500',
-            padding: '8px 12px',
-            borderRadius: '4px',
-            transition: 'background-color 0.2s',
-          }}
-          onMouseOver={(e) => (e.target.style.backgroundColor = '#1565c0')}
-          onMouseOut={(e) => (e.target.style.backgroundColor = 'transparent')}
-        >
-          Admin Login
-        </Link>
+        
         {isLoggedIn && (
           <button
             onClick={handleLogout}

@@ -4,17 +4,19 @@ import Login from './components/Login';
 import AdminDashboard from './components/AdminDashboard';
 import SecurityDashboard from './components/SecurityDashboard';
 import ResidentDashboard from './components/ResidentDashboard';
+import Layout from './components/Layout';
 import VisitDetails from './pages/VisitDetails';
 import CreateVisit from './pages/CreateVisit';
 import { decodedTokenData } from './services/auth'; // Import the function
 
 function App() {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('security_token');
   const decoded = token ? decodedTokenData(token) : null;
   const role = decoded ? decoded.role : null;
 
+  console.log('role', role)
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem('security_token');
     window.location.href = '/login';
   };
 
@@ -45,7 +47,7 @@ function App() {
           path="/create-visit"
           element={token && role === 'resident' ? <CreateVisit onLogout={handleLogout} /> : <Navigate to="/login" />}
         />
-        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/" element={<Layout />} />
       </Routes>
     </Router>
   );

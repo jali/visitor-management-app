@@ -28,9 +28,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).send({ info: 'bad credentials, please try again' });
     }
     const data = { _id: user.id, name: user.name, role: user.role };
-    console.log('data:=======> ', data)
     const token = auth.generateToken(data);
-
     res.header('x-auth-token', token).send({ 'token': token });
   } catch (error) {
     console.error(error);

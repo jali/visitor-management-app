@@ -8,7 +8,6 @@ const { CLIENT_BASE_URL } = require('../constants');
 
 // Create a visit (resident only)
 router.post('/', auth.verifyToken, auth.checkRole(['resident']), async (req, res) => {
-  console.log('user role save visit', req.user.role)
   if (req.user.role !== 'resident') {
     return res.status(403).json({ msg: 'Access denied' });
   }
@@ -36,14 +35,12 @@ router.post('/', auth.verifyToken, auth.checkRole(['resident']), async (req, res
 
 // Get visit details (admin and security only)
 router.get('/:visitId', auth.verifyToken, auth.checkRole(['admin', 'security']), async (req, res) => {
-  console.log('user role /viditId', req.user.role)
   if (req.user.role !== 'security') {
     return res.status(403).json({ msg: 'Access denied' });
   }
 
   try {
     const visit = await Visit.findOne({ visitId: req.params.visitId }).populate('residentId', 'name');
-    console.log('visit details: --->', visit)
     if (!visit) return res.status(404).json({ msg: 'Visit not found' });
     res.json(visit);
   } catch (err) {
@@ -53,7 +50,6 @@ router.get('/:visitId', auth.verifyToken, auth.checkRole(['admin', 'security']),
 
 // Get almyl visits for a resident
 router.get('/my-visits', auth.verifyToken, auth.checkRole(['resident']), async (req, res) => {
-  console.log('user role my-visits', req.user.role)
   if (req.user.role !== 'resident') {
     return res.status(403).json({ msg: 'Access denied' });
   }

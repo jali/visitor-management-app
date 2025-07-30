@@ -6,6 +6,11 @@ const User = require('../models/user');
 const { v4: uuidv4 } = require('uuid');
 const { CLIENT_BASE_URL } = require('../constants');
 
+// Validate token
+router.get('/', auth.verifyToken, async(req, res) => {
+  res.json({msg: 'token checked'})
+});
+
 // Create a visit (resident only)
 router.post('/', auth.verifyToken, auth.checkRole(['resident']), async (req, res) => {
   if (req.user.role !== 'resident') {

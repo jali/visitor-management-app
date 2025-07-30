@@ -45,10 +45,10 @@ const seedData = async () => {
       residentId: resident._id,
       visitorName: 'Jalal Mahmood',
       visitTime: new Date(),
-      visitDuration: 2,
-      flatNumber: '101',
-      buildingNumber: 'A',
-      carDetails: 'Toyota Corolla, 11 J 11',
+      visitDuration: 2000,
+      flatNumber: '22',
+      buildingNumber: '11',
+      carDetails: 'Toyota Corolla, White',
       visitId: uuidv4(),
     });
     console.log('Inserted test visit');
